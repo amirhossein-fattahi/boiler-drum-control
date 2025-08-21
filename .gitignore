@@ -1,0 +1,24 @@
+# MATLAB editor/backup/junk
+*.asv
+*.m~ 
+*.mex*
+*.autosave
+*.slxc
+*.slprj/
+*.mdl.r201*
+*.mldatx
+*.mat      # (keep if you commit small .mat files; otherwise LFS them)
+*.fig      # prefer saving .png for diffs
+
+# Simulink caches
+slprj/
+work/
+codegen/
+
+# OS clutter
+.DS_Store
+Thumbs.db
+
+# VS Code, JetBrains, etc.
+.vscode/
+.idea/
