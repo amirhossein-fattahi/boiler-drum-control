@@ -39,3 +39,17 @@ disp('Step info (PID vs Lead/Lag):'); Sinfo_PID, Sinfo_LL
 % Stability margins
 figure; margin(C_PID*G1); grid on; title('Open-loop PID*G1 margins')
 figure; margin(C_LL*G1 ); grid on; title('Open-loop Lead/Lag*G1 margins')
+
+
+% --- SAVE PLOTS ---
+if ~exist('../figs','dir'); mkdir('../figs'); end
+
+set(figure(1), 'Name','SetpointTracking');
+print(1, '../figs/01_setpoint_tracking', '-dpng','-r200');
+
+set(figure(2), 'Name','DisturbanceRejection');
+print(2, '../figs/02_disturbance_rejection', '-dpng','-r200');
+
+% Bode/margin figures may be 3 and 4 depending on your session:
+print(3, '../figs/03_margin_pid', '-dpng','-r200');
+print(4, '../figs/04_margin_leadlag', '-dpng','-r200');
