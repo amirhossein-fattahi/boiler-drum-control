@@ -1,4 +1,4 @@
-%% run_sims.m
+%% run_sims.m  (robust figure saving)
 run params.m
 run design_pid.m
 run design_leadlag.m
@@ -24,32 +24,49 @@ uD = (t >= t_stepD)*D_amp;                   % time signal
 [y_pid_d, ~] = lsim(D_PID, uD, t);
 [y_ll_d,  ~] = lsim(D_LL,  uD, t);
 
-% overlay plots
-figure; plot(t1,y_pid_sp,'-', t1,y_ll_sp,'--'); grid on
-title('Setpoint tracking'); xlabel('Time [s]'); ylabel('Level'); legend('PID','Lead/Lag')
+% ---------- PLOTS (capture handles) ----------
+h1 = figure('Name','SetpointTracking');
+plot(t1,y_pid_sp,'-', t1,y_ll_sp,'--'); grid on
+title('Setpoint tracking'); xlabel('Time [s]'); ylabel('Level'); legend('PID','Lead/Lag','Location','best')
 
-figure; plot(t,y_pid_d,'-', t,y_ll_d,'--'); grid on
-title('Disturbance rejection (step at t=300 s)'); xlabel('Time [s]'); ylabel('Level'); legend('PID','Lead/Lag')
+h2 = figure('Name','DisturbanceRejection');
+plot(t,y_pid_d,'-', t,y_ll_d,'--'); grid on
+title(sprintf('Disturbance rejection (step at t=%g s)', t_stepD));
+xlabel('Time [s]'); ylabel('Level'); legend('PID','Lead/Lag','Location','best')
 
-% Metrics
+% Metrics (printed to console)
 Sinfo_PID = stepinfo(SP_amp*T_PID);
 Sinfo_LL  = stepinfo(SP_amp*T_LL);
 disp('Step info (PID vs Lead/Lag):'); Sinfo_PID, Sinfo_LL
 
 % Stability margins
-figure; margin(C_PID*G1); grid on; title('Open-loop PID*G1 margins')
-figure; margin(C_LL*G1 ); grid on; title('Open-loop Lead/Lag*G1 margins')
+h3 = figure('Name','OpenLoopMargins_PID');
+margin(C_PID*G1); grid on; title('Open-loop PID*G1 margins')
 
+h4 = figure('Name','OpenLoopMargins_LeadLag');
+margin(C_LL*G1 ); grid on; title('Open-loop Lead/Lag*G1 margins')
 
-% --- SAVE PLOTS ---
-if ~exist('../figs','dir'); mkdir('../figs'); end
+% ---------- SAVE PLOTS (robust paths) ----------
+% Resolve repo root: .../boiler-drum-control/src -> repoRoot
+thisFile = mfilename('fullpath');
+if isempty(thisFile)
+    curDir  = pwd;                % if running line-by-line
+else
+    curDir  = fileparts(thisFile);
+end
+repoRoot = fileparts(curDir);     % go up from src/
+figsDir  = fullfile(repoRoot,'figs');
+if ~exist(figsDir,'dir'); mkdir(figsDir); end
 
-set(figure(1), 'Name','SetpointTracking');
-print(1, '../figs/01_setpoint_tracking', '-dpng','-r200');
+saveFig = @(h, name) ...
+    (exist('exportgraphics','file') == 2) * exportgraphics(h, fullfile(figsDir, name), 'Resolution', 200) + ...
+    (exist('exportgraphics','file') ~= 2) * print(h, fullfile(figsDir, erase(name,'.png')), '-dpng','-r200'); %#ok<NASGU>
 
-set(figure(2), 'Name','DisturbanceRejection');
-print(2, '../figs/02_disturbance_rejection', '-dpng','-r200');
+% Save using handles (names match README)
+exportName = @(s) [s '.png'];
+saveFig(h1, exportName('01_setpoint_tracking'));
+saveFig(h2, exportName('02_disturbance_rejection'));
+saveFig(h3, exportName('03_margin_pid'));
+saveFig(h4, exportName('04_margin_leadlag'));
 
-% Bode/margin figures may be 3 and 4 depending on your session:
-print(3, '../figs/03_margin_pid', '-dpng','-r200');
-print(4, '../figs/04_margin_leadlag', '-dpng','-r200');
+disp(['Saved figures to: ' figsDir])
