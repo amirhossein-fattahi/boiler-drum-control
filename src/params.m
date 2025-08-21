@@ -6,11 +6,11 @@
 % Output:
 %   h : drum water level (normalized)
 
-K1 = 1.0;     % feedwater -> level gain
-T1 = 50.0;    % time constant [s]
+K1 = 0.018;     % feedwater -> level gain
+T1 = 13.5;    % time constant [s]
 
-K2 = -0.8;    % steam outflow -> level gain (negative effect)
-T2 = 60.0;    % time constant [s]
+K2 = -0.042;    % steam outflow -> level gain (negative effect)
+T2 = 13.3;    % time constant [s]
 
 s = tf('s');
 G1 = K1/(T1*s + 1);    % control path
@@ -22,5 +22,5 @@ t_stepSP = 100;     % setpoint step time
 t_stepD  = 300;     % disturbance step time
 
 % setpoint and disturbance amplitudes (normalized units)
-SP_amp = 1.0;       % +1 level step
+SP_amp = 1.2;       % +1 level step
 D_amp  = 0.5;       % +0.5 steam outflow step
