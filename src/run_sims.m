@@ -47,7 +47,6 @@ h4 = figure('Name','OpenLoopMargins_LeadLag');
 margin(C_LL*G1 ); grid on; title('Open-loop Lead/Lag*G1 margins')
 
 % ---------- SAVE PLOTS (robust paths) ----------
-% Resolve repo root: .../boiler-drum-control/src -> repoRoot
 thisFile = mfilename('fullpath');
 if isempty(thisFile)
     curDir  = pwd;                % if running line-by-line
@@ -58,15 +57,19 @@ repoRoot = fileparts(curDir);     % go up from src/
 figsDir  = fullfile(repoRoot,'figs');
 if ~exist(figsDir,'dir'); mkdir(figsDir); end
 
-saveFig = @(h, name) ...
-    (exist('exportgraphics','file') == 2) * exportgraphics(h, fullfile(figsDir, name), 'Resolution', 200) + ...
-    (exist('exportgraphics','file') ~= 2) * print(h, fullfile(figsDir, erase(name,'.png')), '-dpng','-r200'); %#ok<NASGU>
+% helper: safe save
+function saveMyFig(figHandle, fileName, figsDir)
+    fullPath = fullfile(figsDir, fileName);
+    try
+        exportgraphics(figHandle, fullPath, 'Resolution', 200);
+    catch
+        print(figHandle, fullfile(figsDir, erase(fileName,'.png')), '-dpng','-r200');
+    end
+end
 
-% Save using handles (names match README)
-exportName = @(s) [s '.png'];
-saveFig(h1, exportName('01_setpoint_tracking'));
-saveFig(h2, exportName('02_disturbance_rejection'));
-saveFig(h3, exportName('03_margin_pid'));
-saveFig(h4, exportName('04_margin_leadlag'));
+saveMyFig(h1, '01_setpoint_tracking.png', figsDir);
+saveMyFig(h2, '02_disturbance_rejection.png', figsDir);
+saveMyFig(h3, '03_margin_pid.png', figsDir);
+saveMyFig(h4, '04_margin_leadlag.png', figsDir);
 
 disp(['Saved figures to: ' figsDir])
